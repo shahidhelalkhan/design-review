@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Email Health layout options</title>
+<style>
+:root{--border:#e3e6ec;--radius:8px;--link:#5e72e4;--fg:#1f2430;--muted:#6b7280}
+body{margin:0;background:#fff;color:var(--fg);font:14px/21px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:28px 16px 40px}
+.ui-header{margin-bottom:16px}.ui-title{font-size:18px;font-weight:500;margin:0 0 6px;text-wrap:balance}
+.ui-sub,.ui-muted,.ui-caption{color:var(--muted);margin:0}.ui-caption{font-size:12px}
+.ui-stack{display:grid;gap:var(--gap,12px)}
+.ui-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:2px;background:#f1f3f7;border-radius:8px;max-width:100%}
+.ui-seg button{border:0;background:none;padding:6px 12px;border-radius:6px;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
+.ui-seg button[aria-selected=true]{background:#fff;color:var(--fg);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.ui-seg button:focus-visible{outline:2px solid var(--link);outline-offset:1px}
+.ui-enter{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(2px)}}
+</style>
+<script>window.ui={icon:()=>""};document.addEventListener("click",e=>{const b=e.target.closest(".ui-seg button");if(!b)return;const s=b.parentElement;s.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));s.dispatchEvent(new CustomEvent("change",{detail:{value:b.dataset.value}}))})</script>
+</head><body><main>
+<div class="ui-header">
+	<p class="ui-title">Email Health: which layout should replace the row of 8 boxes?</p>
+	<p class="ui-sub">
+		Super Admin → Email Health. Today's page against three options. Switch to "Bounces rising" to see how each shows a problem.
+	</p>
+</div>
+<div class="ui-stack" style="--gap: 8px; margin-bottom: 12px">
+	<div class="ui-seg" id="dir" aria-label="Layout">
+		<button data-value="today" aria-selected="true">Today</button>
+		<button data-value="status">Status first</button>
+		<button data-value="strip">One strip</button>
+		<button data-value="problems">Problems only</button>
+	</div>
+	<div class="ui-seg" id="cond" aria-label="Condition">
+		<button data-value="clear" aria-selected="true">All clear (real)</button>
+		<button data-value="rising">Bounces rising (example)</button>
+	</div>
+	<p class="ui-muted" id="tradeoff" style="text-wrap: pretty"></p>
+</div>
+<div class="mock" id="mock"></div>
+<p class="ui-caption" style="margin-top: 8px; text-wrap: pretty">
+	All clear uses today's real numbers. Bounces rising is made-up sample data.
+	Breaker trip limits (2.50% bounces, 0.080% complaints) are the ones on the page today.
+</p>
+<style>
+	.mock {
+		background: #f8f9fe;
+		border-radius: var(--radius);
+		box-shadow: 0 0 0 1px var(--border);
+		padding: 12px;
+		color: #525f7f;
+		font-size: 12px;
+		line-height: 18px;
+	}
+	.mock * { box-sizing: border-box; }
+	.m-card {
+		background: #fff;
+		border-radius: 6px;
+		box-shadow: 0 1px 3px rgb(50 50 93 / 0.15), 0 1px 0 rgb(0 0 0 / 0.02);
+		padding: 12px;
+		min-width: 0;
+	}
+	.m-lbl { font-size: 10px; text-transform: uppercase; color: #8898aa; letter-spacing: 0.02em; }
+	.m-val { font-size: 17px; color: #32325d; font-variant-numeric: tabular-nums; }
+	.m-small { font-size: 11px; color: #8898aa; }
+	.m-grid { display: grid; gap: 8px; }
+	.m-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+	.m-title { font-size: 13px; color: #32325d; }
+	.m-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+	.m-bar { height: 6px; border-radius: 3px; background: #e9ecef; position: relative; overflow: hidden; }
+	.m-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
+	.m-bar > b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #f5365c; }
+	.m-sep { border-left: 1px solid #e9ecef; }
+	.m-pill { border-radius: 10px; padding: 2px 8px; font-size: 10px; text-transform: uppercase; }
+	.m-icon { width: 24px; height: 24px; border-radius: 50%; flex: none; }
+	.t-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.s-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.strip > div { padding: 0 12px; min-width: 0; }
+	.strip > div:first-child { padding-left: 0; }
+	@media (max-width: 560px) {
+		.s-cols { grid-template-columns: minmax(0, 1fr); }
+		.strip { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+		.strip > div:nth-child(3) { padding-left: 0; border-left: 0; }
+	}
+	.m-link { color: #5e72e4; font-size: 11px; cursor: pointer; background: none; border: 0; padding: 0; }
+	.m-link:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+</style>
+<script>
+	{
+		const C = { blue: '#5e72e4', cyan: '#11cdef', green: '#2dce89', orange: '#fb6340', red: '#f5365c', dark: '#32325d', muted: '#8898aa', grey: '#5a6270' }
+		const data = {
+			clear: {
+				sent: 14, delivered: 14, hard: 0, complaints: 0, unsubs: 0, delays: 0, rejected: 0,
+				complaintRate: 0, quotaUsed: 285, quota: 50000, rate: 14,
+				status: { Setup: 0, Warming: 0, Healthy: 0, Warning: 0, Paused: 0, Disabled: 0 },
+				warnNames: [],
+			},
+			rising: {
+				sent: 1240, delivered: 1198, hard: 24, complaints: 0, unsubs: 6, delays: 3, rejected: 2,
+				complaintRate: 0, quotaUsed: 1460, quota: 50000, rate: 14,
+				status: { Setup: 3, Warming: 2, Healthy: 4, Warning: 1, Paused: 0, Disabled: 0 },
+				warnNames: ['Example Cafe'],
+			},
+		}
+		const LIMIT_BOUNCE = 2.5, LIMIT_COMPLAINT = 0.08
+		const statusColor = { Setup: '#adb5bd', Warming: C.cyan, Healthy: C.green, Warning: C.orange, Paused: C.red, Disabled: C.grey }
+		const tradeoffs = {
+			today: 'Today: 8 boxes, a full-width rate card and 6 pills, nearly all showing 0. Card heights and icons don\'t match, and nothing says whether sending is OK.',
+			status: 'Answers "is sending OK?" in one line, then three grouped cards with rates drawn against their trip limits. Biggest change of the three; about a day of work.',
+			strip: 'Same data as today in one card: 4 main numbers, everything else as one quiet line. Smallest change, a few hours, but it still shows a lot of zeros.',
+			problems: 'Shows only what is wrong; when nothing is, one line says so. Fewest boxes, but people must click "Show all numbers" to confirm a metric is 0.',
+		}
+		const state = { dir: 'today', cond: 'clear', showAll: false }
+		const el = (id) => document.getElementById(id)
+		const n = (v) => v.toLocaleString('en-US')
+		const pct = (a, b, d = 2) => (b ? (a / b) * 100 : 0).toFixed(d) + '%'
+
+		function derived(d) {
+			const bounceRate = d.sent ? (d.hard / d.sent) * 100 : 0
+			const problems = [
+				['Hard bounces', d.hard], ['Complaints', d.complaints], ['Unsubscribes', d.unsubs],
+				['Delivery delays', d.delays], ['Rejected', d.rejected],
+			]
+			const near = bounceRate >= LIMIT_BOUNCE * 0.6
+			return { bounceRate, problems, near, warn: d.status.Warning, paused: d.status.Paused }
+		}
+
+		function today(d, x) {
+			const box = (label, val, color, tall) => `<div class="m-card"><div class="m-row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div style="min-width:0"><div class="m-lbl">${label}</div><div class="m-val">${val}</div></div>${tall ? '' : `<span class="m-icon" style="background:${color}"></span>`}</div>${tall ? `<span class="m-icon" style="background:${color};display:block;margin-top:6px"></span>` : ''}</div>`
+			return `<div class="m-grid">
+				<div class="m-grid t-kpis">
+					${box('Sent (7d)', n(d.sent), C.blue)}${box('Delivered', n(d.delivered), C.green)}${box('Hard bounces', n(d.hard), C.orange)}${box('Complaints', n(d.complaints), C.red, true)}${box('Unsubscribes', n(d.unsubs), C.cyan, true)}${box('Delivery delays', n(d.delays), '#eef1f6')}${box('Rejected', n(d.rejected), '#eef1f6')}${box('Bounce rate', x.bounceRate.toFixed(2) + '%', C.green)}
+				</div>
+				<div class="m-card m-row" style="justify-content:space-between"><div><div class="m-lbl">Complaint rate (non-Gmail)</div><div class="m-val">${d.complaintRate.toFixed(3)}%</div><div class="m-small">${x.paused} clients paused</div></div><span class="m-icon" style="background:${C.green}"></span></div>
+				<div class="m-grid" style="grid-template-columns:repeat(auto-fill,minmax(96px,1fr))">${Object.entries(d.status).map(([k, v]) => `<span class="m-pill" style="text-align:center;background:${statusColor[k]}33;color:${C.dark}">${k}: ${v}</span>`).join('')}</div>
+			</div>`
+		}
+
+		function rateBar(label, value, limit, digits) {
+			const width = Math.min(100, (value / limit) * 100)
+			const color = width >= 100 ? C.red : width >= 60 ? C.orange : C.green
+			return `<div style="margin-top:8px"><div class="m-row" style="justify-content:space-between"><span>${label}</span><span style="color:${C.dark};font-variant-numeric:tabular-nums">${value.toFixed(digits)}% <span class="m-small">of ${limit.toFixed(digits)}% limit</span></span></div><div class="m-bar" style="margin-top:4px"><i style="width:${Math.max(width, 1.5)}%;background:${color}"></i></div></div>`
+		}
+
+		function statusBar(d) {
+			const total = Object.values(d.status).reduce((a, b) => a + b, 0)
+			if (!total) return `<div class="m-small">No restaurants have started email setup yet.</div>`
+			return `<div class="m-bar" style="height:8px;display:flex">${Object.entries(d.status).filter(([, v]) => v).map(([k, v]) => `<span style="width:${(v / total) * 100}%;background:${statusColor[k]}"></span>`).join('')}</div><div class="m-row" style="margin-top:6px;gap:10px">${Object.entries(d.status).filter(([, v]) => v).map(([k, v]) => `<span class="m-row" style="gap:4px"><span class="m-dot" style="background:${statusColor[k]}"></span>${k} ${v}</span>`).join('')}</div>`
+		}
+
+		function banner(d, x) {
+			const bad = x.near || x.warn || x.paused
+			const text = bad
+				? `Watch: bounce rate ${x.bounceRate.toFixed(2)}% (breaker trips at ${LIMIT_BOUNCE.toFixed(2)}%). ${x.warn} restaurant in warning: ${d.warnNames.join(', ')}.`
+				: 'Sending normally. Both breakers closed, no restaurants in warning or paused.'
+			return `<div class="m-card m-row" style="flex-wrap:nowrap"><span class="m-dot" style="background:${bad ? C.orange : C.green}"></span><span class="m-title" style="text-wrap:pretty">${text}</span></div>`
+		}
+
+		function status(d, x) {
+			const quotaPct = (d.quotaUsed / d.quota) * 100
+			return `<div class="m-grid">
+				${banner(d, x)}
+				<div class="m-grid s-cols">
+					<div class="m-card"><div class="m-lbl">Volume, last 7 days</div><div class="m-row" style="gap:16px;margin-top:4px"><div><div class="m-val">${n(d.sent)}</div><div class="m-small">sent</div></div><div><div class="m-val">${n(d.delivered)}</div><div class="m-small">delivered (${pct(d.delivered, d.sent, 1)})</div></div></div><div style="margin-top:8px" class="m-small">SES quota ${n(d.quotaUsed)} of ${n(d.quota)} today</div><div class="m-bar" style="margin-top:4px"><i style="width:${Math.max(quotaPct, 1.5)}%;background:${C.blue}"></i></div></div>
+					<div class="m-card"><div class="m-lbl">Rates against breaker limits</div>${rateBar('Bounce rate', x.bounceRate, LIMIT_BOUNCE, 2)}${rateBar('Complaint rate (non-Gmail)', d.complaintRate, LIMIT_COMPLAINT, 3)}</div>
+					<div class="m-card"><div class="m-lbl">Problems, last 7 days</div>${x.problems.map(([k, v]) => `<div class="m-row" style="justify-content:space-between;margin-top:3px"><span>${k}</span><span style="color:${v ? C.orange : C.muted};font-variant-numeric:tabular-nums">${n(v)}</span></div>`).join('')}</div>
+				</div>
+				<div class="m-card"><div class="m-lbl" style="margin-bottom:6px">Restaurants by email status</div>${statusBar(d)}</div>
+			</div>`
+		}
+
+		function strip(d, x) {
+			const cell = (label, val, sub, color) => `<div class="${label === 'Sent (7d)' ? '' : 'm-sep'}"><div class="m-lbl">${label}</div><div class="m-val" style="color:${color || C.dark}">${val}</div><div class="m-small">${sub}</div></div>`
+			const bColor = x.bounceRate >= LIMIT_BOUNCE ? C.red : x.near ? C.orange : C.dark
+			return `<div class="m-grid">
+				<div class="m-card">
+					<div class="strip">
+						${cell('Sent (7d)', n(d.sent), `quota ${n(d.quotaUsed)} / ${n(d.quota)} today`)}
+						${cell('Delivered', n(d.delivered), pct(d.delivered, d.sent, 1) + ' of sent')}
+						${cell('Bounce rate', x.bounceRate.toFixed(2) + '%', `trips at ${LIMIT_BOUNCE.toFixed(2)}%`, bColor)}
+						${cell('Complaint rate', d.complaintRate.toFixed(3) + '%', `non-Gmail, trips at ${LIMIT_COMPLAINT.toFixed(3)}%`)}
+					</div>
+					<div style="border-top:1px solid #e9ecef;margin-top:12px;padding-top:8px" class="m-small">${x.problems.map(([k, v]) => `<span style="color:${v ? C.orange : C.muted}">${n(v)} ${k.toLowerCase()}</span>`).join(' &nbsp;·&nbsp; ')}</div>
+				</div>
+				<div class="m-card m-row" style="gap:12px"><span class="m-lbl">Restaurants</span>${Object.entries(d.status).map(([k, v]) => `<span class="m-row" style="gap:4px;color:${v ? C.dark : C.muted}"><span class="m-dot" style="background:${statusColor[k]}"></span>${k} ${v}</span>`).join('')}</div>
+			</div>`
+		}
+
+		function problems(d, x) {
+			const issues = []
+			if (x.near) issues.push([C.orange, `Bounce rate ${x.bounceRate.toFixed(2)}%`, `${n(d.hard)} hard bounces of ${n(d.sent)} sent. The account breaker trips at ${LIMIT_BOUNCE.toFixed(2)}%.`])
+			d.warnNames.forEach((name) => issues.push([C.orange, `${name} is in warning`, 'Its own bounce rate is high. Sending continues at a lower limit.']))
+			x.problems.filter(([k, v]) => v && k !== 'Hard bounces').forEach(([k, v]) => issues.push([C.muted, `${n(v)} ${k.toLowerCase()}`, 'Last 7 days']))
+			const list = issues.length
+				? issues.map(([c, t, s]) => `<div class="m-row" style="flex-wrap:nowrap;align-items:flex-start;padding:6px 0;border-top:1px solid #e9ecef"><span class="m-dot" style="background:${c};margin-top:5px"></span><div><div style="color:${C.dark}">${t}</div><div class="m-small">${s}</div></div></div>`).join('')
+				: `<div class="m-row" style="padding:6px 0;border-top:1px solid #e9ecef"><span class="m-dot" style="background:${C.green}"></span><span style="color:${C.dark}">Nothing needs attention. Both breakers closed.</span></div>`
+			const all = state.showAll
+				? `<div class="m-grid ui-enter" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-top:8px">${[['Sent (7d)', d.sent], ['Delivered', d.delivered], ...x.problems].map(([k, v]) => `<div class="m-row" style="justify-content:space-between"><span>${k}</span><span style="color:${C.dark};font-variant-numeric:tabular-nums">${n(v)}</span></div>`).join('')}</div>`
+				: ''
+			return `<div class="m-grid">
+				<div class="m-card">
+					<div class="m-row" style="justify-content:space-between"><span class="m-title">Needs attention</span><span class="m-small">${n(d.sent)} sent, ${pct(d.delivered, d.sent, 1)} delivered, last 7 days</span></div>
+					<div style="margin-top:6px">${list}</div>
+					<button class="m-link" id="showall" aria-expanded="${state.showAll}">${state.showAll ? 'Hide numbers' : 'Show all numbers'}</button>
+					${all}
+				</div>
+			</div>`
+		}
+
+		function render() {
+			const hadFocus = document.activeElement?.id === 'showall'
+			const d = data[state.cond]
+			const x = derived(d)
+			el('tradeoff').textContent = tradeoffs[state.dir]
+			el('mock').innerHTML = { today, status, strip, problems }[state.dir](d, x)
+			const btn = el('showall')
+			if (btn) {
+				btn.addEventListener('click', () => { state.showAll = !state.showAll; render() })
+				if (hadFocus) btn.focus()
+			}
+		}
+		el('dir').addEventListener('change', (e) => { state.dir = e.detail.value; state.showAll = false; render() })
+		el('cond').addEventListener('change', (e) => { state.cond = e.detail.value; render() })
+		render()
+	}
+</script>
+
+</main></body></html>
